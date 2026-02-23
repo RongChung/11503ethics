@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <title>臺中市政府交通局115年度廉政有獎徵答活動</title>
 <style>
 body{margin:0;overflow:hidden;font-family:"Microsoft JhengHei",sans-serif;}
@@ -48,6 +49,11 @@ text-shadow:1px 1px 3px black;
   z-index:1000;
 }
 
+/* 手機才顯示 */
+@media (min-width: 769px){
+  #mobileControls { display: none; }
+}
+
 #mobileControls button{
   width:70px;
   height:70px;
@@ -58,22 +64,21 @@ text-shadow:1px 1px 3px black;
   color:white;
   opacity:0.85;
 }
-    
 </style>
 </head>
-    <div id="mobileControls">
+<body>
+
+<div id="mobileControls">
   <button id="btnLeft">◀</button>
   <button id="btnJump">⬆</button>
   <button id="btnRight">▶</button>
 </div>
-<body>
 
 <canvas id="game"></canvas>
 
 <div id="ui" class="hidden">
 關卡 <span id="level">1</span>/10　
 分數 <span id="score">0</span>
-鍵盤：→前進、空白鍵：跳躍
 </div>
 
 <div id="startPanel" class="panel">
@@ -107,11 +112,11 @@ const ctx=canvas.getContext("2d");
 canvas.width=window.innerWidth;
 canvas.height=window.innerHeight;
 
-const scale = 1.8; // 放大倍率
+const scale = 1.8;
 
 // 圖片
 const bgImg=new Image(); bgImg.src="index/bg.png";
-const playerImg=new Image(); playerImg.src="index/player.png"; // 200x86, 3幀水平
+const playerImg=new Image(); playerImg.src="index/player.png"; 
 const flagImg=new Image(); flagImg.src="index/flag.png";
 
 let imagesLoaded=0;
@@ -124,12 +129,12 @@ let name="", playerOrg="", playerDept="";
 let level=1, score=0, cameraX=0;
 let keys={};
 let gravity=0.8;
-let ground=canvas.height-40*scale;
+let ground=canvas.height-50*scale;
 let worldWidth=5000;
 
 let player={
     x:100, y:0,
-    width:66*scale, height:86*scale, // 放大後
+    width:66*scale, height:86*scale,
     vx:0, vy:0,
     speed:5, jump:16*scale, grounded:false,
     currentFrame:0, frameCount:3, frameTimer:0, frameInterval:10
@@ -157,10 +162,10 @@ function init(){
     player.y=ground-player.height;
     for(let i=0;i<10;i++){
         goals.push({
-            x:200 + i*400, 
-            y:ground-80*scale, 
-            width:60*scale, 
-            height:80*scale, 
+            x:200 + i*400,
+            y:ground-80*scale,
+            width:60*scale,
+            height:80*scale,
             triggered:false
         });
     }
@@ -223,11 +228,20 @@ function collide(a,b){
 
 function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    for(let i=0;i<Math.ceil(worldWidth/bgImg.width)+1;i++){
-        ctx.drawImage(bgImg,i*bgImg.width - cameraX*0.3,0,bgImg.width,canvas.height);
+
+    // 背景滿版
+    let bgCount = Math.ceil(worldWidth / canvas.width) + 1;
+    for(let i=0;i<bgCount;i++){
+        ctx.drawImage(bgImg,
+            0,0,bgImg.width,bgImg.height,
+            i*canvas.width - cameraX*0.3,0,
+            canvas.width,canvas.height
+        );
     }
+
     ctx.fillStyle="#00000000";
     ctx.fillRect(-cameraX,ground,worldWidth,80*scale);
+
     goals.forEach(g=>{
         ctx.drawImage(flagImg,
             g.x-cameraX,
@@ -237,12 +251,11 @@ function draw(){
         );
     });
 
-    // 畫角色
-const frameWidth = 200 / 3; // sprite sheet 每幀原寬
-ctx.drawImage(playerImg,
-    frameWidth * player.currentFrame, 0, frameWidth, 83, // 裁切範圍原始
-    player.x - cameraX, player.y, frameWidth*scale, 86*scale // 畫在 canvas 上，使用放大後的 player.y
-);
+    const frameWidth = 200 / 3;
+    ctx.drawImage(playerImg,
+        frameWidth*player.currentFrame,0,frameWidth,83,
+        player.x-cameraX,player.y,frameWidth*scale,86*scale
+    );
 }
 
 function triggerQuiz(){
@@ -280,26 +293,25 @@ function endGame(){
 
 function sendToGoogle(score){
     const formURL = "https://docs.google.com/forms/d/e/1FAIpQLScdNCEoBimh2GRPDz0TqGWHpWldiB3g6lZ4zjAYcZZUj8Rgrw/formResponse";
-
     const fields = {
         "entry.993402590": name,
         "entry.1922734240": playerOrg,
         "entry.1807015476": playerDept,
         "entry.2064592372": score
     };
-
-    fetch(formURL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(fields)
+    fetch(formURL,{
+        method:"POST",
+        mode:"no-cors",
+        headers:{"Content-Type":"application/x-www-form-urlencoded"},
+        body:new URLSearchParams(fields)
     }).then(()=>console.log("資料已送出 Google 表單"))
-      .catch(err=>console.error("送出失敗:", err));
+      .catch(err=>console.error("送出失敗:",err));
 }
 
 function loop(){update(); draw(); requestAnimationFrame(loop);}
 
-    const btnLeft=document.getElementById("btnLeft");
+// 手機按鈕
+const btnLeft=document.getElementById("btnLeft");
 const btnRight=document.getElementById("btnRight");
 const btnJump=document.getElementById("btnJump");
 
@@ -314,10 +326,9 @@ btnJump.addEventListener("touchstart",()=>{
         player.vy=-player.jump;
         player.grounded=false;
     }
-});s
+});
+document.addEventListener("touchmove",e=>e.preventDefault(),{passive:false});
+
 </script>
 </body>
-
 </html>
-
-
