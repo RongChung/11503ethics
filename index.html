@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>臺中市政府交通局115年度廉政有獎徵答活動</title>
+<style>
+body{margin:0;overflow:hidden;font-family:"Microsoft JhengHei",sans-serif;}
+canvas{display:block;width:100vw;height:100vh;}
+.panel{
+position:absolute;
+top:50%;left:50%;
+transform:translate(-50%,-50%);
+background:white;
+padding:30px;
+width:420px;
+border-radius:12px;
+box-shadow:0 15px 40px rgba(0,0,0,0.3);
+text-align:center;
+}
+button{
+width:100%;
+padding:10px;
+margin-top:10px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+background:#2e7d32;
+color:white;
+font-size:15px;
+}
+button:hover{background:#256428;}
+#ui{
+position:absolute;
+top:15px;
+left:20px;
+color:white;
+font-size:18px;
+text-shadow:1px 1px 3px black;
+}
+.hidden{display:none;}
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="ui" class="hidden">
+關卡 <span id="level">1</span>/10　
+分數 <span id="score">0</span>
+鍵盤：→前進、空白鍵：跳躍
+</div>
+
+<div id="startPanel" class="panel">
+<h2>臺中市政府交通局政風室<br>115年度廉政有獎徵答</h2>
+<input id="playerName" placeholder="姓名" style="width:100%;padding:8px;"><br>
+<select id="playerOrg" style="width:105%;padding:8px;margin-top:8px;">
+<option value="">機關</option>
+<option value="交通局">交通局</option>
+<option value="停車管理處">停車管理處</option>
+<option value="交通事件裁決處">交通事件裁決處</option>
+<option value="車輛行車事故鑑定委員會">車輛行車事故鑑定委員會</option>
+</select><br>
+<input id="playerDept" placeholder="科室" style="width:100%;padding:8px;margin-top:8px;"><br>
+<button onclick="startGame()">開始挑戰</button>
+</div>
+
+<div id="quizPanel" class="panel hidden">
+<h3 id="question"></h3>
+<div id="answers"></div>
+</div>
+
+<div id="endPanel" class="panel hidden">
+<h2>挑戰完成</h2>
+<p id="finalResult"></p>
+<button onclick="location.reload()">重新開始</button>
+</div>
+
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+const scale = 1.8; // 放大倍率
+
+// 圖片
+const bgImg=new Image(); bgImg.src="bg.png";
+const playerImg=new Image(); playerImg.src="player.png"; // 200x86, 3幀水平
+const flagImg=new Image(); flagImg.src="flag.png";
+
+let imagesLoaded=0;
+[bgImg,playerImg,flagImg].forEach(img=>{
+    img.onload=()=>{ imagesLoaded++; if(imagesLoaded===3) init(); };
+});
+
+let state="start";
+let name="", playerOrg="", playerDept="";
+let level=1, score=0, cameraX=0;
+let keys={};
+let gravity=0.8;
+let ground=canvas.height-40*scale;
+let worldWidth=5000;
+
+let player={
+    x:100, y:0,
+    width:66*scale, height:86*scale, // 放大後
+    vx:0, vy:0,
+    speed:5, jump:16*scale, grounded:false,
+    currentFrame:0, frameCount:3, frameTimer:0, frameInterval:10
+};
+
+let goals=[];
+const questions=[
+{q:"1+1=?",a:["1","2","3","4"],c:1},
+{q:"5×2=?",a:["8","9","10","11"],c:2},
+{q:"台灣首都是？",a:["台北","台中","高雄","台南"],c:0},
+{q:"3×3=?",a:["6","7","8","9"],c:3},
+{q:"HTML 是？",a:["語言","硬體","資料庫","病毒"],c:0},
+{q:"8+1=?",a:["7","8","9","10"],c:2},
+{q:"CSS 用途？",a:["美化","運算","挖礦","壓縮"],c:0},
+{q:"10-3=?",a:["5","6","7","8"],c:2},
+{q:"瀏覽器？",a:["Chrome","Excel","Word","PowerPoint"],c:0},
+{q:"JavaScript 是？",a:["語言","硬碟","滑鼠","作業系統"],c:0}
+];
+
+document.addEventListener("keydown",e=>keys[e.code]=true);
+document.addEventListener("keyup",e=>keys[e.code]=false);
+
+function init(){
+    ground=canvas.height-50*scale;
+    player.y=ground-player.height;
+    for(let i=0;i<10;i++){
+        goals.push({
+            x:200 + i*400, 
+            y:ground-80*scale, 
+            width:60*scale, 
+            height:80*scale, 
+            triggered:false
+        });
+    }
+    loop();
+}
+
+function startGame(){
+    name=document.getElementById("playerName").value.trim();
+    playerOrg=document.getElementById("playerOrg").value;
+    playerDept=document.getElementById("playerDept").value.trim();
+    if(!name||!playerOrg||!playerDept){alert("請完整填寫資料");return;}
+    document.getElementById("startPanel").classList.add("hidden");
+    countdown(3);
+}
+
+function countdown(num){
+    const panel=document.createElement("div");
+    panel.className="panel";
+    panel.innerHTML="<h1>"+num+"</h1>";
+    document.body.appendChild(panel);
+    setTimeout(()=>{
+        document.body.removeChild(panel);
+        if(num>1) countdown(num-1);
+        else{ state="play"; document.getElementById("ui").classList.remove("hidden"); }
+    },1000);
+}
+
+function update(){
+    if(state!=="play") return;
+    if(keys["ArrowRight"]) player.vx=player.speed;
+    else if(keys["ArrowLeft"]) player.vx=-player.speed;
+    else player.vx=0;
+    if(keys["Space"] && player.grounded){player.vy=-player.jump; player.grounded=false;}
+    player.vy+=gravity;
+    player.x+=player.vx;
+    player.y+=player.vy;
+    if(player.y+player.height>=ground){player.y=ground-player.height; player.vy=0; player.grounded=true;}
+    cameraX += ((player.x - canvas.width*0.35) - cameraX)*0.1;
+    if(cameraX<0) cameraX=0;
+    if(cameraX>worldWidth-canvas.width) cameraX=worldWidth-canvas.width;
+
+    player.frameTimer++;
+    if(player.frameTimer>=player.frameInterval){
+        player.currentFrame = (player.currentFrame+1) % player.frameCount;
+        player.frameTimer=0;
+    }
+
+    if(level<=goals.length){
+        let g=goals[level-1];
+        if(!g.triggered && collide(player,g)){
+            triggerQuiz();
+            g.triggered=true;
+        }
+    }
+}
+
+function collide(a,b){
+    return a.x<b.x+b.width && a.x+a.width>b.x && a.y<b.y+b.height && a.y+a.height>b.y;
+}
+
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(let i=0;i<Math.ceil(worldWidth/bgImg.width)+1;i++){
+        ctx.drawImage(bgImg,i*bgImg.width - cameraX*0.3,0,bgImg.width,canvas.height);
+    }
+    ctx.fillStyle="#00000000";
+    ctx.fillRect(-cameraX,ground,worldWidth,80*scale);
+    goals.forEach(g=>{
+        ctx.drawImage(flagImg,
+            g.x-cameraX,
+            g.y,
+            g.width,
+            g.height
+        );
+    });
+
+    // 畫角色
+const frameWidth = 200 / 3; // sprite sheet 每幀原寬
+ctx.drawImage(playerImg,
+    frameWidth * player.currentFrame, 0, frameWidth, 83, // 裁切範圍原始
+    player.x - cameraX, player.y, frameWidth*scale, 86*scale // 畫在 canvas 上，使用放大後的 player.y
+);
+}
+
+function triggerQuiz(){
+    state="quiz"; player.vx=0;
+    document.getElementById("quizPanel").classList.remove("hidden");
+    const q=questions[level-1];
+    document.getElementById("question").innerText=q.q;
+    const ansDiv=document.getElementById("answers"); ansDiv.innerHTML="";
+    q.a.forEach((t,i)=>{
+        const btn=document.createElement("button");
+        btn.innerText=t;
+        btn.onclick=()=>checkAnswer(i);
+        ansDiv.appendChild(btn);
+    });
+}
+
+function checkAnswer(i){
+    if(i===questions[level-1].c) score+=10;
+    document.getElementById("score").innerText=score;
+    document.getElementById("quizPanel").classList.add("hidden");
+    level++;
+    if(level>10){endGame();}
+    else{document.getElementById("level").innerText=level; state="play";}
+}
+
+function endGame(){
+    state="end";
+    document.getElementById("ui").classList.add("hidden");
+    document.getElementById("endPanel").classList.remove("hidden");
+    let msg="挑戰者："+name+"　機關："+playerOrg+"　科室："+playerDept+"　總分："+score+" 分\n";
+    msg+=score>=90?"恭喜達到90分以上，符合抽獎資格。":"未達90分，不符合抽獎資格。";
+    document.getElementById("finalResult").innerText=msg;
+    sendToGoogle(score);
+}
+
+function sendToGoogle(score){
+    const formURL = "https://docs.google.com/forms/d/e/1FAIpQLScdNCEoBimh2GRPDz0TqGWHpWldiB3g6lZ4zjAYcZZUj8Rgrw/formResponse";
+
+    const fields = {
+        "entry.993402590": name,
+        "entry.1922734240": playerOrg,
+        "entry.1807015476": playerDept,
+        "entry.2064592372": score
+    };
+
+    fetch(formURL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(fields)
+    }).then(()=>console.log("資料已送出 Google 表單"))
+      .catch(err=>console.error("送出失敗:", err));
+}
+
+function loop(){update(); draw(); requestAnimationFrame(loop);}
+</script>
+</body>
+</html>
