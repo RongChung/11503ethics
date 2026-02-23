@@ -38,8 +38,34 @@ font-size:18px;
 text-shadow:1px 1px 3px black;
 }
 .hidden{display:none;}
+#mobileControls{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:25px;
+  z-index:1000;
+}
+
+#mobileControls button{
+  width:70px;
+  height:70px;
+  font-size:28px;
+  border-radius:50%;
+  border:none;
+  background:#2e7d32;
+  color:white;
+  opacity:0.85;
+}
+    
 </style>
 </head>
+    <div id="mobileControls">
+  <button id="btnLeft">◀</button>
+  <button id="btnJump">⬆</button>
+  <button id="btnRight">▶</button>
+</div>
 <body>
 
 <canvas id="game"></canvas>
@@ -272,8 +298,26 @@ function sendToGoogle(score){
 }
 
 function loop(){update(); draw(); requestAnimationFrame(loop);}
+
+    const btnLeft=document.getElementById("btnLeft");
+const btnRight=document.getElementById("btnRight");
+const btnJump=document.getElementById("btnJump");
+
+btnLeft.addEventListener("touchstart",()=>keys["ArrowLeft"]=true);
+btnLeft.addEventListener("touchend",()=>keys["ArrowLeft"]=false);
+
+btnRight.addEventListener("touchstart",()=>keys["ArrowRight"]=true);
+btnRight.addEventListener("touchend",()=>keys["ArrowRight"]=false);
+
+btnJump.addEventListener("touchstart",()=>{
+    if(player.grounded){
+        player.vy=-player.jump;
+        player.grounded=false;
+    }
+});s
 </script>
 </body>
 
 </html>
+
 
