@@ -84,9 +84,9 @@ canvas.height=window.innerHeight;
 const scale = 1.8; // 放大倍率
 
 // 圖片
-const bgImg=new Image(); bgImg.src="bg.png";
-const playerImg=new Image(); playerImg.src="player.png"; // 200x86, 3幀水平
-const flagImg=new Image(); flagImg.src="flag.png";
+const bgImg=new Image(); bgImg.src=index/"bg.png";
+const playerImg=new Image(); playerImg.src=index/"player.png"; // 200x86, 3幀水平
+const flagImg=new Image(); flagImg.src=index/"flag.png";
 
 let imagesLoaded=0;
 [bgImg,playerImg,flagImg].forEach(img=>{
@@ -274,4 +274,5 @@ function sendToGoogle(score){
 function loop(){update(); draw(); requestAnimationFrame(loop);}
 </script>
 </body>
+
 </html>
