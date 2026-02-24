@@ -55,6 +55,11 @@ button:hover{background:#256428;}
 <button onclick="startGame()">開始挑戰</button>
 </div>
 
+<div id="quizPanel" class="panel hidden">
+<h3 id="question"></h3>
+<div id="answers"></div>
+</div>
+
 <div id="endPanel" class="panel hidden">
 <h2>挑戰完成</h2>
 <p id="finalResult"></p>
@@ -87,18 +92,30 @@ let gravity=0.8;
 let player={x:100,y:0,width:66*scale,height:86*scale,vx:0,vy:0,speed:5,jump:16*scale,grounded:false,currentFrame:0,frameCount:3,frameTimer:0,frameInterval:10};
 
 let goals=[];
+const questions=[
+{q:"1+1=?",a:["1","2","3","4"],c:1},
+{q:"5×2=?",a:["8","9","10","11"],c:2},
+{q:"台灣首都是？",a:["台北","台中","高雄","台南"],c:0},
+{q:"3×3=?",a:["6","7","8","9"],c:3},
+{q:"HTML 是？",a:["語言","硬體","資料庫","病毒"],c:0},
+{q:"8+1=?",a:["7","8","9","10"],c:2},
+{q:"CSS 用途？",a:["美化","運算","挖礦","壓縮"],c:0},
+{q:"10-3=?",a:["5","6","7","8"],c:2},
+{q:"瀏覽器？",a:["Chrome","Excel","Word","PowerPoint"],c:0},
+{q:"JavaScript 是？",a:["語言","硬碟","滑鼠","作業系統"],c:0}
+];
+
+document.addEventListener("keydown",e=>keys[e.code]=true);
+document.addEventListener("keyup",e=>keys[e.code]=false);
 
 function init(){
 ground=canvas.height-50*scale;
 player.y=ground-player.height;
 for(let i=0;i<10;i++){
-goals.push({x:400+i*300,y:ground-60*scale,width:80*scale,height:60*scale,triggered:false,frame:0,frameTimer:0});
+goals.push({x:400+i*300,y:ground-150*scale,width:80*scale,height:60*scale,triggered:false,frame:0,frameTimer:0}); // 提高旗幟高度
 }
 loop();
 }
-
-document.addEventListener("keydown",e=>keys[e.code]=true);
-document.addEventListener("keyup",e=>keys[e.code]=false);
 
 function startGame(){
 name=document.getElementById("playerName").value.trim();
@@ -112,6 +129,7 @@ document.getElementById("ui").classList.remove("hidden");
 
 function update(){
 if(state!=="play")return;
+
 // 玩家左右
 if(keys["ArrowRight"]){player.vx=player.speed;} 
 else if(keys["ArrowLeft"]){player.vx=-player.speed;} 
@@ -129,8 +147,35 @@ cameraX+=((player.x-canvas.width*0.35)-cameraX)*0.1;
 if(cameraX<0)cameraX=0;if(cameraX>worldWidth-canvas.width)cameraX=worldWidth-canvas.width;
 // goals動畫
 goals.forEach(g=>{g.frameTimer++;if(g.frameTimer>20){g.frame=(g.frame+1)%2;g.frameTimer=0;}});
-// goals碰撞
-if(level<=goals.length){let g=goals[level-1];if(!g.triggered&&collide(player,g)){g.triggered=true;score+=10;document.getElementById("score").innerText=score;level++;document.getElementById("level").innerText=level>10?10:level;if(level>10)endGame();}}
+// goals碰撞並觸發題目
+if(level<=goals.length){
+let g=goals[level-1];
+if(!g.triggered && collide(player,g)){
+g.triggered=true;
+state="quiz";
+player.vx=0;
+document.getElementById("quizPanel").classList.remove("hidden");
+const q=questions[level-1];
+document.getElementById("question").innerText=q.q;
+const ansDiv=document.getElementById("answers"); ansDiv.innerHTML="";
+q.a.forEach((t,i)=>{
+const btn=document.createElement("button");
+btn.innerText=t;
+btn.onclick=()=>checkAnswer(i);
+ansDiv.appendChild(btn);
+});
+}
+}
+}
+
+function checkAnswer(i){
+if(i===questions[level-1].c) score+=10;
+document.getElementById("score").innerText=score;
+document.getElementById("quizPanel").classList.add("hidden");
+level++;
+document.getElementById("level").innerText=level>10?10:level;
+state="play";
+if(level>10) endGame();
 }
 
 function collide(a,b){return a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y;}
@@ -153,8 +198,6 @@ document.getElementById("endPanel").classList.remove("hidden");
 document.getElementById("finalResult").innerText="挑戰者："+name+" 機關："+playerOrg+" 科室："+playerDept+" 總分："+score+" 分";
 }
 
-function loop(){update();draw();requestAnimationFrame(loop);}
-
 // 手機按鈕
 const btnLeft=document.getElementById("btnLeft");
 const btnRight=document.getElementById("btnRight");
@@ -165,6 +208,9 @@ btnRight.addEventListener("touchstart",()=>keys["ArrowRight"]=true);
 btnRight.addEventListener("touchend",()=>keys["ArrowRight"]=false);
 btnJump.addEventListener("touchstart",()=>{if(player.grounded){player.vy=-player.jump;player.grounded=false;}});
 document.addEventListener("touchmove",e=>e.preventDefault(),{passive:false});
+
+function loop(){update();draw();requestAnimationFrame(loop);}
+loop();
 </script>
 
 </body>
