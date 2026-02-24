@@ -190,7 +190,7 @@ function endGame(){
 state="end";
 document.getElementById("ui").classList.add("hidden");
 document.getElementById("endPanel").classList.remove("hidden");
-document.getElementById("finalResult").innerText="挑戰者："+name+" 機關：<br>"+playerOrg+"科室："+playerDept+" 總分："+score+" 分<br>"+
+document.getElementById("finalResult").innerText="挑戰者："+name+" 機關："+playerOrg+"科室："+playerDept+" 總分："+score+" 分"+
   (score >= 90 ? "恭喜達到90分以上，符合抽獎資格。" : "未達90分，不符合抽獎資格。");
 
 sendToGoogle(score);
@@ -231,6 +231,7 @@ loop();
 
 </body>
 </html>
+
 
 
 
