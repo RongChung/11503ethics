@@ -77,9 +77,9 @@ const scale=1.8;
 let ground=canvas.height-50*scale;
 let worldWidth=5000;
 
-const bgImg=new Image(); bgImg.src="index/bg.png";
-const playerImg=new Image(); playerImg.src="index/player.png"; // 3幀
-const flagImg=new Image(); flagImg.src="index/flag.png"; // 2幀
+const bgImg=new Image(); bgImg.src="bg.png";
+const playerImg=new Image(); playerImg.src="player.png"; // 3幀
+const flagImg=new Image(); flagImg.src="flag.png"; // 2幀
 
 let imagesLoaded=0;
 [bgImg,playerImg,flagImg].forEach(img=>{img.onload=()=>{imagesLoaded++;if(imagesLoaded===3)init();}});
@@ -231,6 +231,7 @@ loop();
 
 </body>
 </html>
+
 
 
 
