@@ -111,8 +111,9 @@ document.addEventListener("keyup",e=>keys[e.code]=false);
 function init(){
 ground=canvas.height-50*scale;
 player.y=ground-player.height;
+// 調整旗幟間距更遠，300 -> 500
 for(let i=0;i<10;i++){
-goals.push({x:400+i*300,y:ground-50*scale,width:80*scale,height:100*scale,triggered:false,frame:0,frameTimer:0}); // 提高旗幟高度
+goals.push({x:400+i*500,y:ground-150*scale,width:80*scale,height:60*scale,triggered:false,frame:0,frameTimer:0});
 }
 loop();
 }
@@ -130,24 +131,20 @@ document.getElementById("ui").classList.remove("hidden");
 function update(){
 if(state!=="play")return;
 
-// 玩家左右
 if(keys["ArrowRight"]){player.vx=player.speed;} 
 else if(keys["ArrowLeft"]){player.vx=-player.speed;} 
 else{player.vx=0;}
-// 跳躍
 if(keys["Space"]&&player.grounded){player.vy=-player.jump;player.grounded=false;}
 player.vy+=gravity;
 player.x+=player.vx;
 player.y+=player.vy;
 if(player.y+player.height>=ground){player.y=ground-player.height;player.vy=0;player.grounded=true;}
-// 角色動畫
 if(player.vx!=0){player.frameTimer++;if(player.frameTimer>=player.frameInterval){player.currentFrame=(player.currentFrame+1)%player.frameCount;player.frameTimer=0;}}
-// 相機
 cameraX+=((player.x-canvas.width*0.35)-cameraX)*0.1;
 if(cameraX<0)cameraX=0;if(cameraX>worldWidth-canvas.width)cameraX=worldWidth-canvas.width;
-// goals動畫
+
 goals.forEach(g=>{g.frameTimer++;if(g.frameTimer>20){g.frame=(g.frame+1)%2;g.frameTimer=0;}});
-// goals碰撞並觸發題目
+
 if(level<=goals.length){
 let g=goals[level-1];
 if(!g.triggered && collide(player,g)){
@@ -182,12 +179,9 @@ function collide(a,b){return a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&
 
 function draw(){
 ctx.clearRect(0,0,canvas.width,canvas.height);
-// 背景滿版
 let bgCount=Math.ceil(worldWidth/canvas.width)+1;
 for(let i=0;i<bgCount;i++){ctx.drawImage(bgImg,0,0,bgImg.width,bgImg.height,i*canvas.width-cameraX*0.3,0,canvas.width,canvas.height);}
-// 畫 goals
 goals.forEach(g=>{ctx.drawImage(flagImg,g.frame*250,0,250,378,g.x-cameraX,g.y,g.width,g.height);});
-// 畫角色
 ctx.drawImage(playerImg,player.currentFrame*200/3,0,200/3,83,player.x-cameraX,player.y,player.width,player.height);
 }
 
@@ -196,6 +190,26 @@ state="end";
 document.getElementById("ui").classList.add("hidden");
 document.getElementById("endPanel").classList.remove("hidden");
 document.getElementById("finalResult").innerText="挑戰者："+name+" 機關："+playerOrg+" 科室："+playerDept+" 總分："+score+" 分";
+
+sendToGoogle(score);
+}
+
+// Google 表單送出
+function sendToGoogle(score){
+const formURL="https://docs.google.com/forms/d/e/1FAIpQLScdNCEoBimh2GRPDz0TqGWHpWldiB3g6lZ4zjAYcZZUj8Rgrw/formResponse";
+const fields={
+"entry.993402590": name,
+"entry.1922734240": playerOrg,
+"entry.1807015476": playerDept,
+"entry.2064592372": score
+};
+fetch(formURL,{
+method:"POST",
+mode:"no-cors",
+headers:{"Content-Type":"application/x-www-form-urlencoded"},
+body:new URLSearchParams(fields)
+}).then(()=>console.log("資料已送出 Google 表單"))
+  .catch(err=>console.error("送出失敗:",err));
 }
 
 // 手機按鈕
@@ -215,8 +229,3 @@ loop();
 
 </body>
 </html>
-
-
-
-
-
