@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>廉政遊戲</title>
+<title>115年廉政有獎徵答活動</title>
 <style>
 body{margin:0;overflow:hidden;font-family:"Microsoft JhengHei",sans-serif;}
 canvas{display:block;width:100vw;height:100vh;}
@@ -36,12 +36,13 @@ button:hover{background:#256428;}
 </div>
 
 <div id="startPanel" class="panel">
-<h2>廉政遊戲</h2>
+<h2>臺中市政府交通局<br>115年度廉政有獎徵答活動</h2>
 <div style="text-align:left;font-size:14px;margin:10px 0;line-height:1.6;">
-1. 方向鍵或手機按鈕控制角色。<br>
-2. 碰觸旗幟後回答題目。<br>
-3. 每題10分，共10題。<br>
-4. 達90分以上符合抽獎資格。
+1. 方向鍵控制角色。<br>
+2. 建議以電腦操作體驗最佳。<br>
+3. 碰觸旗幟後回答題目。<br>
+4. 每題10分，共10題。<br>
+5. 達90分以上符合抽獎資格。
 </div>
 <input id="playerName" placeholder="姓名" style="width:100%;padding:8px;"><br>
 <select id="playerOrg" style="width:100%;padding:8px;margin-top:8px;">
@@ -113,7 +114,7 @@ ground=canvas.height-50*scale;
 player.y=ground-player.height;
 // 調整旗幟間距更遠，300 -> 500
 for(let i=0;i<10;i++){
-goals.push({x:400+i*500,y:ground-150*scale,width:80*scale,height:60*scale,triggered:false,frame:0,frameTimer:0});
+goals.push({x:400+i*500,y:ground-100*scale,width:80*scale,height:60*scale,triggered:false,frame:0,frameTimer:0});
 }
 loop();
 }
@@ -229,3 +230,4 @@ loop();
 
 </body>
 </html>
+
