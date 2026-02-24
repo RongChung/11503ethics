@@ -32,11 +32,16 @@ font-size:15px;
 button:hover{background:#256428;}
 #ui{
 position:absolute;
-top:15px;
+top:20px;
 left:20px;
-color:white;
-font-size:18px;
-text-shadow:1px 1px 3px black;
+font-size:32px;
+font-weight:bold;
+color:#ffffff;
+text-shadow:
+  2px 2px 0 #000,
+  -2px 2px 0 #000,
+  2px -2px 0 #000,
+  -2px -2px 0 #000;
 }
 .hidden{display:none;}
 #mobileControls{
@@ -163,7 +168,7 @@ function init(){
     player.y=ground-player.height;
     for(let i=0;i<10;i++){
         goals.push({
-            x:200 + i*400,
+            x:400 + i*400,
             y:ground-80*scale,
             width:60*scale,
             height:80*scale,
@@ -333,4 +338,5 @@ document.addEventListener("touchmove",e=>e.preventDefault(),{passive:false});
 </script>
 </body>
 </html>
+
 
