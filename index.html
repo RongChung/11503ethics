@@ -3,76 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>臺中市政府交通局115年度廉政有獎徵答活動</title>
-
+<title>廉政遊戲</title>
 <style>
 body{margin:0;overflow:hidden;font-family:"Microsoft JhengHei",sans-serif;}
 canvas{display:block;width:100vw;height:100vh;}
-
 .panel{
-position:absolute;
-top:50%;left:50%;
-transform:translate(-50%,-50%);
-background:white;
-padding:30px;
-width:420px;
-border-radius:12px;
-box-shadow:0 15px 40px rgba(0,0,0,0.3);
-text-align:center;
+position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+background:white;padding:30px;width:420px;border-radius:12px;box-shadow:0 15px 40px rgba(0,0,0,0.3);text-align:center;
 }
-
-button{
-width:100%;
-padding:10px;
-margin-top:10px;
-border:none;
-border-radius:6px;
-cursor:pointer;
-background:#2e7d32;
-color:white;
-font-size:15px;
-}
+button{width:100%;padding:10px;margin-top:10px;border:none;border-radius:6px;cursor:pointer;background:#2e7d32;color:white;font-size:15px;}
 button:hover{background:#256428;}
-
-#ui{
-position:absolute;
-top:20px;
-left:20px;
-font-size:32px;
-font-weight:bold;
-color:#ffffff;
-text-shadow:2px 2px 0 #000,-2px 2px 0 #000,2px -2px 0 #000,-2px -2px 0 #000;
-}
-
+#ui{position:absolute;top:20px;left:20px;font-size:32px;font-weight:bold;color:#fff;text-shadow:2px 2px 0 #000,-2px 2px 0 #000,2px -2px 0 #000,-2px -2px 0 #000;}
 .hidden{display:none;}
-
-#mobileControls{
-position:fixed;
-bottom:20px;
-left:50%;
-transform:translateX(-50%);
-display:flex;
-gap:25px;
-z-index:1000;
-}
-
-@media (min-width:769px){
-#mobileControls{display:none;}
-}
-
-#mobileControls button{
-width:70px;
-height:70px;
-font-size:28px;
-border-radius:50%;
-border:none;
-background:#2e7d32;
-color:white;
-opacity:0.85;
-}
+#mobileControls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:25px;z-index:1000;}
+@media (min-width:769px){#mobileControls{display:none;}}
+#mobileControls button{width:70px;height:70px;font-size:28px;border-radius:50%;border:none;background:#2e7d32;color:white;opacity:0.85;}
 </style>
 </head>
-
 <body>
 
 <div id="mobileControls">
@@ -89,14 +36,13 @@ opacity:0.85;
 </div>
 
 <div id="startPanel" class="panel">
-<h2>臺中市政府交通局政風室<br>115年度廉政有獎徵答</h2>
+<h2>廉政遊戲</h2>
 <div style="text-align:left;font-size:14px;margin:10px 0;line-height:1.6;">
-1. 使用方向鍵或手機下方按鈕控制角色。<br>
-2. 碰觸旗幟(小蜜蜂)後回答題目。<br>
+1. 方向鍵或手機按鈕控制角色。<br>
+2. 碰觸旗幟後回答題目。<br>
 3. 每題10分，共10題。<br>
 4. 達90分以上符合抽獎資格。
 </div>
-
 <input id="playerName" placeholder="姓名" style="width:100%;padding:8px;"><br>
 <select id="playerOrg" style="width:100%;padding:8px;margin-top:8px;">
 <option value="">機關</option>
@@ -109,11 +55,6 @@ opacity:0.85;
 <button onclick="startGame()">開始挑戰</button>
 </div>
 
-<div id="quizPanel" class="panel hidden">
-<h3 id="question"></h3>
-<div id="answers"></div>
-</div>
-
 <div id="endPanel" class="panel hidden">
 <h2>挑戰完成</h2>
 <p id="finalResult"></p>
@@ -123,7 +64,6 @@ opacity:0.85;
 <script>
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
-
 canvas.width=window.innerWidth;
 canvas.height=window.innerHeight;
 
@@ -132,13 +72,11 @@ let ground=canvas.height-50*scale;
 let worldWidth=5000;
 
 const bgImg=new Image(); bgImg.src="index/bg.png";
-const playerImg=new Image(); playerImg.src="index/player.png";
-const flagImg=new Image(); flagImg.src="index/flag.png";
+const playerImg=new Image(); playerImg.src="index/player.png"; // 3幀
+const flagImg=new Image(); flagImg.src="index/flag.png"; // 2幀
 
 let imagesLoaded=0;
-[bgImg,playerImg,flagImg].forEach(img=>{
-img.onload=()=>{imagesLoaded++;if(imagesLoaded===3)init();};
-});
+[bgImg,playerImg,flagImg].forEach(img=>{img.onload=()=>{imagesLoaded++;if(imagesLoaded===3)init();}});
 
 let state="start";
 let name="",playerOrg="",playerDept="";
@@ -146,32 +84,16 @@ let level=1,score=0,cameraX=0;
 let keys={};
 let gravity=0.8;
 
-let player={
-x:100,y:0,
-width:66*scale,height:86*scale,
-vx:0,vy:0,
-speed:5,jump:16*scale,grounded:false,
-currentFrame:0,frameCount:3,frameTimer:0,frameInterval:10
-};
+let player={x:100,y:0,width:66*scale,height:86*scale,vx:0,vy:0,speed:5,jump:16*scale,grounded:false,currentFrame:0,frameCount:3,frameTimer:0,frameInterval:10};
 
 let goals=[];
 
 function init(){
 ground=canvas.height-50*scale;
 player.y=ground-player.height;
-
 for(let i=0;i<10;i++){
-goals.push({
-x:400+i*400,
-y:ground-180*scale,
-width:120*scale,
-height:180*scale,
-triggered:false,
-frame:0,
-frameTimer:0
-});
+goals.push({x:400+i*300,y:ground-60*scale,width:80*scale,height:60*scale,triggered:false,frame:0,frameTimer:0});
 }
-
 loop();
 }
 
@@ -190,90 +112,53 @@ document.getElementById("ui").classList.remove("hidden");
 
 function update(){
 if(state!=="play")return;
-
-if(keys["ArrowRight"])player.vx=player.speed;
-else if(keys["ArrowLeft"])player.vx=-player.speed;
-else player.vx=0;
-
+// 玩家左右
+if(keys["ArrowRight"]){player.vx=player.speed;} 
+else if(keys["ArrowLeft"]){player.vx=-player.speed;} 
+else{player.vx=0;}
+// 跳躍
 if(keys["Space"]&&player.grounded){player.vy=-player.jump;player.grounded=false;}
-
 player.vy+=gravity;
 player.x+=player.vx;
 player.y+=player.vy;
-
-if(player.y+player.height>=ground){
-player.y=ground-player.height;
-player.vy=0;
-player.grounded=true;
-}
-
+if(player.y+player.height>=ground){player.y=ground-player.height;player.vy=0;player.grounded=true;}
+// 角色動畫
+if(player.vx!=0){player.frameTimer++;if(player.frameTimer>=player.frameInterval){player.currentFrame=(player.currentFrame+1)%player.frameCount;player.frameTimer=0;}}
+// 相機
 cameraX+=((player.x-canvas.width*0.35)-cameraX)*0.1;
-if(cameraX<0)cameraX=0;
-if(cameraX>worldWidth-canvas.width)cameraX=worldWidth-canvas.width;
-
-goals.forEach(g=>{
-g.frameTimer++;
-if(g.frameTimer>20){
-g.frame=(g.frame+1)%2;
-g.frameTimer=0;
-}
-});
-
-if(level<=goals.length){
-let g=goals[level-1];
-if(!g.triggered&&collide(player,g)){
-g.triggered=true;
-score+=10;
-document.getElementById("score").innerText=score;
-level++;
-document.getElementById("level").innerText=level>10?10:level;
-if(level>10)endGame();
-}
-}
+if(cameraX<0)cameraX=0;if(cameraX>worldWidth-canvas.width)cameraX=worldWidth-canvas.width;
+// goals動畫
+goals.forEach(g=>{g.frameTimer++;if(g.frameTimer>20){g.frame=(g.frame+1)%2;g.frameTimer=0;}});
+// goals碰撞
+if(level<=goals.length){let g=goals[level-1];if(!g.triggered&&collide(player,g)){g.triggered=true;score+=10;document.getElementById("score").innerText=score;level++;document.getElementById("level").innerText=level>10?10:level;if(level>10)endGame();}}
 }
 
-function collide(a,b){
-return a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y;
-}
+function collide(a,b){return a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y;}
 
 function draw(){
 ctx.clearRect(0,0,canvas.width,canvas.height);
-
+// 背景滿版
 let bgCount=Math.ceil(worldWidth/canvas.width)+1;
-for(let i=0;i<bgCount;i++){
-ctx.drawImage(bgImg,0,0,bgImg.width,bgImg.height,
-i*canvas.width-cameraX*0.3,0,
-canvas.width,canvas.height);
-}
-
-goals.forEach(g=>{
-ctx.drawImage(flagImg,
-g.frame*250,0,
-250,378,
-g.x-cameraX,g.y,
-g.width,g.height);
-});
-
-ctx.drawImage(playerImg,
-0,0,200/3,83,
-player.x-cameraX,player.y,
-66*scale,86*scale);
+for(let i=0;i<bgCount;i++){ctx.drawImage(bgImg,0,0,bgImg.width,bgImg.height,i*canvas.width-cameraX*0.3,0,canvas.width,canvas.height);}
+// 畫 goals
+goals.forEach(g=>{ctx.drawImage(flagImg,g.frame*250,0,250,378,g.x-cameraX,g.y,g.width,g.height);});
+// 畫角色
+ctx.drawImage(playerImg,player.currentFrame*200/3,0,200/3,83,player.x-cameraX,player.y,player.width,player.height);
 }
 
 function endGame(){
 state="end";
 document.getElementById("ui").classList.add("hidden");
 document.getElementById("endPanel").classList.remove("hidden");
-document.getElementById("finalResult").innerText=
-"挑戰者："+name+" 機關："+playerOrg+" 科室："+playerDept+" 總分："+score+" 分";
+document.getElementById("finalResult").innerText="挑戰者："+name+" 機關："+playerOrg+" 科室："+playerDept+" 總分："+score+" 分";
 }
 
 function loop(){update();draw();requestAnimationFrame(loop);}
 
+// 手機按鈕
 const btnLeft=document.getElementById("btnLeft");
 const btnRight=document.getElementById("btnRight");
 const btnJump=document.getElementById("btnJump");
-
 btnLeft.addEventListener("touchstart",()=>keys["ArrowLeft"]=true);
 btnLeft.addEventListener("touchend",()=>keys["ArrowLeft"]=false);
 btnRight.addEventListener("touchstart",()=>keys["ArrowRight"]=true);
