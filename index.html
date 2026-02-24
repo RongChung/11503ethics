@@ -84,25 +84,25 @@ text-shadow:
 <div id="ui" class="hidden">
 關卡 <span id="level">1</span>/10　
 分數 <span id="score">0</span>
-玩法：→往右、←往左  
 </div>
 
 <div id="startPanel" class="panel">
 <h2>臺中市政府交通局政風室<br>115年度廉政有獎徵答</h2>
   <div style="text-align:left;font-size:14px;margin:10px 0;line-height:1.6;">
 <b>遊戲方式：</b><br>
-1. 使用方向鍵（手機請用下方按鈕）控制角色移動。(請使用電腦版使用體驗最佳)<br>
-2. 碰觸旗幟(小蜜蜂)後回答題目。<br>
-3. 每題10分，共10題。<br>
-4. 達90分以上即可符合抽獎資格。
+1. 使用方向鍵（手機請用下方按鈕）控制角色移動。<br>
+2. 建議使用電腦版使用體驗最佳。
+3. 碰觸旗幟(小蜜蜂)後回答題目。<br>
+4. 每題10分，共10題。<br>
+5. 達90分以上即可符合抽獎資格。
 </div>
 <input id="playerName" placeholder="姓名" style="width:100%;padding:8px;"><br>
 <select id="playerOrg" style="width:105%;padding:8px;margin-top:8px;">
 <option value="">機關</option>
 <option value="交通局">交通局</option>
-<option value="停車管理處">停車管理處</option>
-<option value="交通事件裁決處">交通事件裁決處</option>
-<option value="車輛行車事故鑑定委員會">車輛行車事故鑑定委員會</option>
+<option value="停管處">停管處</option>
+<option value="裁決處">裁決處</option>
+<option value="車鑑會">車鑑會</option>
 </select><br>
 <input id="playerDept" placeholder="科室" style="width:100%;padding:8px;margin-top:8px;"><br>
 <button onclick="startGame()">開始挑戰</button>
@@ -345,6 +345,7 @@ document.addEventListener("touchmove",e=>e.preventDefault(),{passive:false});
 </script>
 </body>
 </html>
+
 
 
 
