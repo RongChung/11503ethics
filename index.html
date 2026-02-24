@@ -130,7 +130,7 @@ const scale = 1.8;
 // 圖片
 const bgImg=new Image(); bgImg.src="index/bg.png";
 const playerImg=new Image(); playerImg.src="index/player.png"; 
-const flagImg=new Image(); flagImg.src="index/flag.gif";
+const flagImg=new Image(); flagImg.src="index/flag.png";
 
 let imagesLoaded=0;
 [bgImg,playerImg,flagImg].forEach(img=>{
@@ -225,6 +225,13 @@ function update(){
         player.currentFrame = (player.currentFrame+1) % player.frameCount;
         player.frameTimer=0;
     }
+  goals.forEach(g=>{
+    g.frameTimer++;
+    if(g.frameTimer > 20){  // 速度控制
+        g.frame = (g.frame + 1) % 2;
+        g.frameTimer = 0;
+    }
+});
 
     if(level<=goals.length){
         let g=goals[level-1];
@@ -256,12 +263,18 @@ function draw(){
     ctx.fillRect(-cameraX,ground,worldWidth,80*scale);
 
     goals.forEach(g=>{
-        ctx.drawImage(flagImg,
-            g.x-cameraX,
-            g.y,
-            g.width,
-            g.height
-        );
+        const flagFrameWidth = 250;  // 500 ÷ 2
+        const flagFrameHeight = 378;
+
+  ctx.drawImage(
+    flagImg,
+    g.frame * flagFrameWidth, 0,   // 來源X
+    flagFrameWidth, flagFrameHeight,
+    g.x - cameraX,
+    g.y,
+    g.width,
+    g.height
+);
     });
 
     const frameWidth = 200 / 3;
@@ -326,7 +339,6 @@ function loop(){update(); draw(); requestAnimationFrame(loop);}
 // 手機按鈕
 const btnLeft=document.getElementById("btnLeft");
 const btnRight=document.getElementById("btnRight");
-const btnJump=document.getElementById("btnJump");
 
 btnLeft.addEventListener("touchstart",()=>keys["ArrowLeft"]=true);
 btnLeft.addEventListener("touchend",()=>keys["ArrowLeft"]=false);
@@ -334,17 +346,13 @@ btnLeft.addEventListener("touchend",()=>keys["ArrowLeft"]=false);
 btnRight.addEventListener("touchstart",()=>keys["ArrowRight"]=true);
 btnRight.addEventListener("touchend",()=>keys["ArrowRight"]=false);
 
-btnJump.addEventListener("touchstart",()=>{
-    if(player.grounded){
-        player.vy=-player.jump;
-        player.grounded=false;
-    }
 });
 document.addEventListener("touchmove",e=>e.preventDefault(),{passive:false});
 
 </script>
 </body>
 </html>
+
 
 
 
