@@ -1,248 +1,575 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <title>115年廉政有獎徵答活動</title>
 <style>
-body{margin:0;overflow:hidden;font-family:"Microsoft JhengHei",sans-serif;}
-canvas{display:block;width:100vw;height:100vh;}
-.panel{
-position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-background:white;padding:30px;width:420px;border-radius:12px;box-shadow:0 15px 40px rgba(0,0,0,0.3);text-align:center;
+body{
+  margin:0;
+  overflow:hidden;
+  font-family:"Microsoft JhengHei",sans-serif;
 }
-button{width:100%;padding:10px;margin-top:10px;border:none;border-radius:6px;cursor:pointer;background:#2e7d32;color:white;font-size:15px;}
-button:hover{background:#256428;}
-#ui{position:absolute;top:20px;left:20px;font-size:32px;font-weight:bold;color:#fff;text-shadow:2px 2px 0 #000,-2px 2px 0 #000,2px -2px 0 #000,-2px -2px 0 #000;}
-.hidden{display:none;}
-#mobileControls{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:25px;z-index:1000;}
-@media (min-width:769px){#mobileControls{display:none;}}
-#mobileControls button{width:70px;height:70px;font-size:28px;border-radius:50%;border:none;background:#2e7d32;color:white;opacity:0.85;}
+canvas{
+  display:block;
+  width:100vw;
+  height:100vh;
+}
+.panel{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:white;
+  padding:30px;
+  width:420px;
+  max-width:90vw;
+  border-radius:12px;
+  box-shadow:0 15px 40px rgba(0,0,0,0.3);
+  text-align:center;
+  z-index:20;
+}
+button{
+  width:100%;
+  padding:10px;
+  margin-top:10px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  background:#2e7d32;
+  color:white;
+  font-size:15px;
+}
+button:hover{
+  background:#256428;
+}
+input, select{
+  width:100%;
+  padding:8px;
+  margin-top:8px;
+  box-sizing:border-box;
+  font-size:15px;
+}
+#ui{
+  position:absolute;
+  top:20px;
+  left:20px;
+  font-size:32px;
+  font-weight:bold;
+  color:#fff;
+  text-shadow:
+    2px 2px 0 #000,
+   -2px 2px 0 #000,
+    2px -2px 0 #000,
+   -2px -2px 0 #000;
+  z-index:10;
+}
+.hidden{
+  display:none;
+}
+#mobileControls{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  gap:25px;
+  z-index:1000;
+}
+@media (min-width:769px){
+  #mobileControls{
+    display:none;
+  }
+}
+#mobileControls button{
+  width:70px;
+  height:70px;
+  font-size:28px;
+  border-radius:50%;
+  border:none;
+  background:#2e7d32;
+  color:white;
+  opacity:0.85;
+}
+#finalResult{
+  white-space:pre-line;
+  line-height:1.8;
+}
 </style>
 </head>
 <body>
 
 <div id="mobileControls">
-<button id="btnLeft">◀</button>
-//<button id="btnJump">⬆</button>
-<button id="btnRight">▶</button>
+  <button id="btnLeft">◀</button>
+  <button id="btnRight">▶</button>
 </div>
 
 <canvas id="game"></canvas>
 
 <div id="ui" class="hidden">
-關卡 <span id="level">1</span>/10　
-分數 <span id="score">0</span>
+  關卡 <span id="level">1</span>/10　
+  分數 <span id="score">0</span>
 </div>
 
 <div id="startPanel" class="panel">
-<h2>臺中市政府交通局<br>115年度廉政有獎徵答活動</h2>
-<div style="text-align:left;font-size:14px;margin:10px 0;line-height:1.6;">
-1. 方向鍵← →控制角色。<br>
-2. 以電腦操作體驗最佳。<br>
-3. 控制角色碰觸"小蜜蜂"後答題。<br>
-4. 每題10分，共10題。<br>
-5. 達<b>90分</b>以上符合抽獎資格。
-</div>
-<input id="playerName" placeholder="姓名" style="width:95%;padding:8px;"><br>
-<select id="playerOrg" style="width:100%;padding:8px;margin-top:8px;">
-<option value="">機關</option>
-<option value="交通局">交通局</option>
-<option value="停管處">停管處</option>
-<option value="裁決處">裁決處</option>
-<option value="車鑑會">車鑑會</option>
-</select><br>
-<input id="playerDept" placeholder="科室" style="width:95%;padding:8px;margin-top:8px;"><br>
-<button onclick="startGame()">開始挑戰</button>
+  <h2>臺中市政府交通局<br>115年度廉政有獎徵答活動</h2>
+  <div style="text-align:left;font-size:14px;margin:10px 0;line-height:1.6;">
+    1. 方向鍵← →控制角色。<br>
+    2. 以電腦操作體驗最佳。<br>
+    3. 控制角色碰觸「小蜜蜂」後答題。<br>
+    4. 每題10分，共10題。<br>
+    5. 達<b>90分</b>以上符合抽獎資格。
+  </div>
+
+  <input id="playerName" placeholder="姓名">
+
+  <select id="playerOrg">
+    <option value="">機關</option>
+    <option value="交通局">交通局</option>
+    <option value="停管處">停管處</option>
+    <option value="裁決處">裁決處</option>
+    <option value="車鑑會">車鑑會</option>
+  </select>
+
+  <input id="playerDept" placeholder="科室">
+
+  <select id="playerRole">
+    <option value="">職務類型</option>
+    <option value="主管人員（含高階主管及中階主管）">主管人員（含高階主管及中階主管）</option>
+    <option value="辦理綠能業務人員">辦理綠能業務人員</option>
+    <option value="採購人員">採購人員</option>
+    <option value="一般人員（其他同仁）">一般人員（其他同仁）</option>
+    <option value="新進人員">新進人員</option>
+  </select>
+
+  <button onclick="startGame()">開始挑戰</button>
 </div>
 
 <div id="quizPanel" class="panel hidden">
-<h3 id="question"></h3>
-<div id="answers"></div>
+  <h3 id="question"></h3>
+  <div id="answers"></div>
 </div>
 
 <div id="endPanel" class="panel hidden">
-<h2>挑戰完成</h2>
-<p id="finalResult"></p>
-<button onclick="location.reload()">重新開始</button>
+  <h2>挑戰完成</h2>
+  <p id="finalResult"></p>
+  <button onclick="location.reload()">重新開始</button>
 </div>
 
 <script>
-const canvas=document.getElementById("game");
-const ctx=canvas.getContext("2d");
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-const scale=1.8;
-let ground=canvas.height-50*scale;
-let worldWidth=5000;
+function resizeCanvas(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  ground = canvas.height - 50 * scale;
+  if(player){
+    if(player.y + player.height >= ground){
+      player.y = ground - player.height;
+      player.vy = 0;
+      player.grounded = true;
+    }
+  }
+}
+window.addEventListener("resize", resizeCanvas);
 
-const bgImg=new Image(); bgImg.src="bg.png";
-const playerImg=new Image(); playerImg.src="player.png"; // 3幀
-const flagImg=new Image(); flagImg.src="flag.png"; // 2幀
+const scale = 1.8;
+let ground = 0;
+let worldWidth = 5150;
 
-let imagesLoaded=0;
-[bgImg,playerImg,flagImg].forEach(img=>{img.onload=()=>{imagesLoaded++;if(imagesLoaded===3)init();}});
+const bgImg = new Image();
+bgImg.src = "bg.png";
 
-let state="start";
-let name="",playerOrg="",playerDept="";
-let level=1,score=0,cameraX=0;
-let keys={};
-let gravity=0.8;
+const playerImg = new Image();
+playerImg.src = "player.png"; // 3幀
 
-let player={x:100,y:0,width:66*scale,height:86*scale,vx:0,vy:0,speed:5,jump:16*scale,grounded:false,currentFrame:0,frameCount:3,frameTimer:0,frameInterval:10};
+const flagImg = new Image();
+flagImg.src = "flag.png"; // 2幀
 
-let goals=[];
-const questions=[
-{q:"1+1=?",a:["1","2","3","4"],c:1},
-{q:"5×2=?",a:["8","9","10","11"],c:2},
-{q:"台灣首都是？",a:["台北","台中","高雄","台南"],c:0},
-{q:"3×3=?",a:["6","7","8","9"],c:3},
-{q:"HTML 是？",a:["語言","硬體","資料庫","病毒"],c:0},
-{q:"8+1=?",a:["7","8","9","10"],c:2},
-{q:"CSS 用途？",a:["美化","運算","挖礦","壓縮"],c:0},
-{q:"10-3=?",a:["5","6","7","8"],c:2},
-{q:"瀏覽器？",a:["Chrome","Excel","Word","PowerPoint"],c:0},
-{q:"JavaScript 是？",a:["語言","硬碟","滑鼠","作業系統"],c:0}
-];
+let imagesLoaded = 0;
+[bgImg, playerImg, flagImg].forEach(img => {
+  img.onload = () => {
+    imagesLoaded++;
+    if(imagesLoaded === 3){
+      init();
+    }
+  };
+});
 
-document.addEventListener("keydown",e=>keys[e.code]=true);
-document.addEventListener("keyup",e=>keys[e.code]=false);
+let state = "start";
+let name = "";
+let playerOrg = "";
+let playerDept = "";
+let playerRole = "";
+
+let level = 1;
+let score = 0;
+let cameraX = 0;
+let keys = {};
+let gravity = 0.8;
+let currentQuestions = [];
+
+let player = {
+  x:100,
+  y:0,
+  width:66 * scale,
+  height:86 * scale,
+  vx:0,
+  vy:0,
+  speed:5,
+  jump:16 * scale,
+  grounded:false,
+  currentFrame:0,
+  frameCount:3,
+  frameTimer:0,
+  frameInterval:10
+};
+
+let goals = [];
+
+const questionBanks = {
+  "主管題庫":[
+    {q:"主管發現部屬疑似接受廠商不當招待時，應優先如何處理？",a:["先不處理","私下勸說即可","依規定瞭解並循程序處理","幫忙隱匿"],c:2},
+    {q:"主管對高風險業務最重要的管理作為為何？",a:["完全放手","建立監督與內控機制","只看結果","交由廠商決定"],c:1},
+    {q:"主管面對請託關說案件時，較適當的作法為何？",a:["口頭答應","依法登錄並審慎處理","私下協助","交給部屬自行決定"],c:1},
+    {q:"主管知悉同仁可能有利益衝突情形時，應如何處理？",a:["不必理會","請其自行決定","依規定揭露並迴避","等事情發生再說"],c:2},
+    {q:"推動重大政策時，主管最應重視下列何者？",a:["程序透明與風險控管","只求速度","只求長官滿意","不留紀錄"],c:0},
+    {q:"主管督導採購案件時，何者較不適當？",a:["要求依法辦理","要求保留紀錄","指定特定廠商得標","檢視流程風險"],c:2},
+    {q:"發現同仁可能有違失風險，主管最不適合的作法是？",a:["即時提醒","要求補正","裝作沒看到","必要時通報"],c:2},
+    {q:"主管對外部廠商往來原則，何者正確？",a:["可私下頻繁聚餐","應維持公務分際","可收小禮沒關係","可接受私人招待"],c:1},
+    {q:"主管管理廉政風險時，下列何者最重要？",a:["靠印象管理","留存紀錄與定期檢核","不必追蹤","只靠口頭交代"],c:1},
+    {q:"若案件涉及高度裁量，主管應如何降低爭議？",a:["不說明理由","建立標準並公開透明","只靠經驗判斷","由單一人員決定"],c:1}
+  ],
+
+  "綠能題庫":[
+    {q:"辦理綠能案件審查時，首要原則為何？",a:["依法行政、公平審查","先照顧熟識廠商","誰催得快先辦","可私下協調"],c:0},
+    {q:"業者送禮希望加速審查，應如何處理？",a:["收下再說","依法拒絕並視情形通報","只收一次","請同事代收"],c:1},
+    {q:"申請資料不齊全時，較適當的作法為何？",a:["直接私下幫他改","依規通知補正","裝作沒看到","先核准再補"],c:1},
+    {q:"對同類型案件審查標準應如何處理？",a:["每案隨意調整","盡量一致、公平適用","熟人可放寬","廠商大者優先"],c:1},
+    {q:"業者請你用個人通訊軟體私下討論審查細節，應如何因應？",a:["完全可以","儘量回到正式程序管道","晚上再談","請對方直接找主管關說"],c:1},
+    {q:"辦理綠能審查最需要避免的是？",a:["程序留痕","裁量不透明","依法補正","公開標準"],c:1},
+    {q:"案件審查過程中，如遇請託壓力，較適當作法為何？",a:["照對方意思辦","依程序處理並保留紀錄","先拖著不辦","刪除相關訊息"],c:1},
+    {q:"同一廠商反覆來詢問審查結果時，應如何處理？",a:["透露內部意見","依正式流程回覆","先給承諾","私下協調條件"],c:1},
+    {q:"綠能案件如涉及多方利害關係，最重要的是？",a:["口頭約定","透明一致的程序","只聽單一廠商","不用紀錄"],c:1},
+    {q:"辦理補件審查時，何者較不妥？",a:["依規說明缺漏","要求正式補件","替廠商重寫有利內容","留存辦理紀錄"],c:2}
+  ],
+
+  "採購題庫":[
+    {q:"採購人員可否接受廠商餽贈？",a:["可以","視金額而定","原則上不得接受","只要不被發現即可"],c:2},
+    {q:"採購規格訂定最重要的原則為何？",a:["為特定廠商量身打造","公平競爭","只聽單一廠商建議","愈模糊愈好"],c:1},
+    {q:"開標前可否透露底價或評選資訊給特定廠商？",a:["可以","看交情","不得洩漏","長期合作就可以"],c:2},
+    {q:"採購案件文件與流程紀錄應如何處理？",a:["盡量簡化不留存","依法留存完整紀錄","口頭講過就好","可刪除不利資料"],c:1},
+    {q:"廠商邀請用餐討論投標內容，較適當作法為何？",a:["可以去","原則上避免私下不當接觸","帶家人一起去","會後再補紀錄即可"],c:1},
+    {q:"採購案件最應避免何種情形？",a:["公開招標","不公平限制競爭","保留文件","依法審查"],c:1},
+    {q:"評選委員資訊是否可任意提供給廠商？",a:["可以","不得任意洩漏","得標後就可","私下說沒關係"],c:1},
+    {q:"廠商對招標文件有疑義時，應如何處理？",a:["私下告知答案","依正式程序釋疑","不必回應","請他找熟人"],c:1},
+    {q:"採購承辦人遇到關說，何者正確？",a:["配合辦理","依法登錄並依程序處理","直接刪訊息","先口頭答應"],c:1},
+    {q:"何者屬較正確的採購廉政觀念？",a:["程序可以為效率省略","公平、公開、留痕","熟廠商優先","人情比規定重要"],c:1}
+  ],
+
+  "基礎題庫":[
+    {q:"公務員面對廠商送禮，原則上應如何處理？",a:["直接收下","依法拒絕或依規定處理","請同事代收","下班再收"],c:1},
+    {q:"發現疑似不法情事時，較適當的作法為何？",a:["假裝沒看到","向政風等權責單位反映","上網爆料即可","先傳給朋友"],c:1},
+    {q:"下列何者可能涉及利益衝突？",a:["承辦自己親友相關案件","依法請假","正常開會","一般文書作業"],c:0},
+    {q:"公務員執行職務最基本的原則為何？",a:["依法行政","看心情辦理","先幫熟人","長官說了算"],c:0},
+    {q:"與廠商互動時，何者較適當？",a:["保持公私分際","私下接受招待","幫忙喬事情","口頭答應方便處理"],c:0},
+    {q:"收到不明好處邀約時，應如何處理？",a:["先接受再說","拒絕並視情況報告","轉送同事","低調參加"],c:1},
+    {q:"廉政宣導主要目的為何？",a:["增加 paperwork","建立正確法紀觀念","讓大家更怕出門","只是形式"],c:1},
+    {q:"遇到請託關說時，正確觀念為何？",a:["能幫就幫","應依規定處理","先答應再修正","私下處理較快"],c:1},
+    {q:"公務員處理公務資料，應注意什麼？",a:["可任意外傳","應妥善保管","可給熟人參考","下班就不管"],c:1},
+    {q:"何者較符合公務員廉潔要求？",a:["便宜行事","透明、誠信、守法","收小禮無妨","私下幫忙關說"],c:1}
+  ]
+};
+
+document.addEventListener("keydown", e => {
+  keys[e.code] = true;
+});
+
+document.addEventListener("keyup", e => {
+  keys[e.code] = false;
+});
 
 function init(){
-ground=canvas.height-50*scale;
-player.y=ground-player.height;
-// 調整旗幟間距更遠，300 -> 500
-for(let i=0;i<10;i++){
-goals.push({x:400+i*500,y:ground-80*scale,width:70*scale,height:80*scale,triggered:false,frame:0,frameTimer:0});
+  resizeCanvas();
+
+  player.x = 100;
+  player.y = ground - player.height;
+  player.vx = 0;
+  player.vy = 0;
+  player.grounded = true;
+
+  goals = [];
+  for(let i = 0; i < 10; i++){
+    goals.push({
+      x: 400 + i * 500,
+      y: ground - 80 * scale,
+      width: 70 * scale,
+      height: 80 * scale,
+      triggered: false,
+      frame: 0,
+      frameTimer: 0
+    });
+  }
+
+  requestAnimationFrame(loop);
 }
-loop();
+
+function getQuestionBankByRole(role){
+  if(role === "主管人員（含高階主管及中階主管）"){
+    return questionBanks["主管題庫"];
+  }
+  if(role === "辦理綠能業務人員"){
+    return questionBanks["綠能題庫"];
+  }
+  if(role === "採購人員"){
+    return questionBanks["採購題庫"];
+  }
+  return questionBanks["基礎題庫"];
 }
 
 function startGame(){
-name=document.getElementById("playerName").value.trim();
-playerOrg=document.getElementById("playerOrg").value;
-playerDept=document.getElementById("playerDept").value.trim();
-if(!name||!playerOrg||!playerDept){alert("請完整填寫資料");return;}
-document.getElementById("startPanel").classList.add("hidden");
-state="play";
-document.getElementById("ui").classList.remove("hidden");
+  name = document.getElementById("playerName").value.trim();
+  playerOrg = document.getElementById("playerOrg").value;
+  playerDept = document.getElementById("playerDept").value.trim();
+  playerRole = document.getElementById("playerRole").value;
+
+  if(!name || !playerOrg || !playerDept || !playerRole){
+    alert("請完整填寫資料");
+    return;
+  }
+
+  currentQuestions = getQuestionBankByRole(playerRole);
+
+  if(!currentQuestions || currentQuestions.length !== 10){
+    alert("題庫設定有誤");
+    return;
+  }
+
+  level = 1;
+  score = 0;
+  cameraX = 0;
+  document.getElementById("level").innerText = level;
+  document.getElementById("score").innerText = score;
+
+  player.x = 100;
+  player.y = ground - player.height;
+  player.vx = 0;
+  player.vy = 0;
+  player.currentFrame = 0;
+  player.frameTimer = 0;
+  player.grounded = true;
+
+  goals.forEach(g => g.triggered = false);
+
+  document.getElementById("startPanel").classList.add("hidden");
+  document.getElementById("ui").classList.remove("hidden");
+  state = "play";
 }
 
 function update(){
-if(state!=="play")return;
+  if(state !== "play") return;
 
-if(keys["ArrowRight"]){player.vx=player.speed;} 
-else if(keys["ArrowLeft"]){player.vx=-player.speed;} 
-else{player.vx=0;}
-if(keys["Space"]&&player.grounded){player.vy=-player.jump;player.grounded=false;}
-player.vy+=gravity;
-player.x+=player.vx;
-player.y+=player.vy;
-if(player.y+player.height>=ground){player.y=ground-player.height;player.vy=0;player.grounded=true;}
-if(player.vx!=0){player.frameTimer++;if(player.frameTimer>=player.frameInterval){player.currentFrame=(player.currentFrame+1)%player.frameCount;player.frameTimer=0;}}
-cameraX+=((player.x-canvas.width*0.35)-cameraX)*0.1;
-if(cameraX<0)cameraX=0;if(cameraX>worldWidth-canvas.width)cameraX=worldWidth-canvas.width;
+  if(keys["ArrowRight"]){
+    player.vx = player.speed;
+  }else if(keys["ArrowLeft"]){
+    player.vx = -player.speed;
+  }else{
+    player.vx = 0;
+  }
 
-goals.forEach(g=>{g.frameTimer++;if(g.frameTimer>20){g.frame=(g.frame+1)%2;g.frameTimer=0;}});
+  if(keys["Space"] && player.grounded){
+    player.vy = -player.jump;
+    player.grounded = false;
+  }
 
-if(level<=goals.length){
-let g=goals[level-1];
-if(!g.triggered && collide(player,g)){
-g.triggered=true;
-state="quiz";
-player.vx=0;
-document.getElementById("quizPanel").classList.remove("hidden");
-const q=questions[level-1];
-document.getElementById("question").innerText=q.q;
-const ansDiv=document.getElementById("answers"); ansDiv.innerHTML="";
-q.a.forEach((t,i)=>{
-const btn=document.createElement("button");
-btn.innerText=t;
-btn.onclick=()=>checkAnswer(i);
-ansDiv.appendChild(btn);
-});
+  player.vy += gravity;
+  player.x += player.vx;
+  player.y += player.vy;
+
+  if(player.x < 0) player.x = 0;
+  if(player.x > worldWidth - player.width) player.x = worldWidth - player.width;
+
+  if(player.y + player.height >= ground){
+    player.y = ground - player.height;
+    player.vy = 0;
+    player.grounded = true;
+  }
+
+  if(player.vx !== 0){
+    player.frameTimer++;
+    if(player.frameTimer >= player.frameInterval){
+      player.currentFrame = (player.currentFrame + 1) % player.frameCount;
+      player.frameTimer = 0;
+    }
+  }else{
+    player.currentFrame = 0;
+  }
+
+  cameraX += ((player.x - canvas.width * 0.35) - cameraX) * 0.1;
+  if(cameraX < 0) cameraX = 0;
+  if(cameraX > worldWidth - canvas.width) cameraX = worldWidth - canvas.width;
+
+  goals.forEach(g => {
+    g.frameTimer++;
+    if(g.frameTimer > 20){
+      g.frame = (g.frame + 1) % 2;
+      g.frameTimer = 0;
+    }
+  });
+
+  if(level <= goals.length){
+    const g = goals[level - 1];
+    if(!g.triggered && collide(player, g)){
+      g.triggered = true;
+      state = "quiz";
+      player.vx = 0;
+
+      document.getElementById("quizPanel").classList.remove("hidden");
+
+      const q = currentQuestions[level - 1];
+      document.getElementById("question").innerText = q.q;
+
+      const ansDiv = document.getElementById("answers");
+      ansDiv.innerHTML = "";
+
+      q.a.forEach((text, index) => {
+        const btn = document.createElement("button");
+        btn.innerText = text;
+        btn.onclick = () => checkAnswer(index);
+        ansDiv.appendChild(btn);
+      });
+    }
+  }
 }
-}
+
+function checkAnswer(index){
+  if(index === currentQuestions[level - 1].c){
+    score += 10;
+  }
+
+  document.getElementById("score").innerText = score;
+  document.getElementById("quizPanel").classList.add("hidden");
+
+  level++;
+  document.getElementById("level").innerText = level > 10 ? 10 : level;
+
+  if(level > 10){
+    endGame();
+  }else{
+    state = "play";
+  }
 }
 
-function checkAnswer(i){
-if(i===questions[level-1].c) score+=10;
-document.getElementById("score").innerText=score;
-document.getElementById("quizPanel").classList.add("hidden");
-level++;
-document.getElementById("level").innerText=level>10?10:level;
-state="play";
-if(level>10) endGame();
+function collide(a, b){
+  return (
+    a.x < b.x + b.width &&
+    a.x + a.width > b.x &&
+    a.y < b.y + b.height &&
+    a.y + a.height > b.y
+  );
 }
-
-function collide(a,b){return a.x<b.x+b.width&&a.x+a.width>b.x&&a.y<b.y+b.height&&a.y+a.height>b.y;}
 
 function draw(){
-ctx.clearRect(0,0,canvas.width,canvas.height);
-let bgCount=Math.ceil(worldWidth/canvas.width)+1;
-for(let i=0;i<bgCount;i++){ctx.drawImage(bgImg,0,0,bgImg.width,bgImg.height,i*canvas.width-cameraX*0.3,0,canvas.width,canvas.height);}
-goals.forEach(g=>{ctx.drawImage(flagImg,g.frame*250,0,250,378,g.x-cameraX,g.y,g.width,g.height);});
-ctx.drawImage(playerImg,player.currentFrame*200/3,0,200/3,83,player.x-cameraX,player.y,player.width,player.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const bgCount = Math.ceil(worldWidth / canvas.width) + 1;
+  for(let i = 0; i < bgCount; i++){
+    ctx.drawImage(
+      bgImg,
+      0, 0, bgImg.width, bgImg.height,
+      i * canvas.width - cameraX * 0.7, 0,
+      canvas.width, canvas.height
+    );
+  }
+
+  goals.forEach(g => {
+    ctx.drawImage(
+      flagImg,
+      g.frame * 250, 0, 250, 378,
+      g.x - cameraX, g.y, g.width, g.height
+    );
+  });
+
+  ctx.drawImage(
+    playerImg,
+    player.currentFrame * (200 / 3), 0, (200 / 3), 83,
+    player.x - cameraX, player.y, player.width, player.height
+  );
 }
 
 function endGame(){
-state="end";
-document.getElementById("ui").classList.add("hidden");
-document.getElementById("endPanel").classList.remove("hidden");
-document.getElementById("finalResult").innerText="挑戰者："+name+" 機關："+playerOrg+"科室："+playerDept+" 總分："+score+" 分"+
-  (score >= 90 ? "恭喜達到90分以上，符合抽獎資格。" : "未達90分，不符合抽獎資格。");
+  state = "end";
+  document.getElementById("ui").classList.add("hidden");
+  document.getElementById("endPanel").classList.remove("hidden");
 
-sendToGoogle(score);
+  document.getElementById("finalResult").innerText =
+    "挑戰者：" + name + "\n" +
+    "機關：" + playerOrg + "\n" +
+    "職務類型：" + playerRole + "\n" +
+    "科室：" + playerDept + "\n" +
+    "總分：" + score + " 分\n" +
+    (score >= 90
+      ? "恭喜達到90分以上，符合抽獎資格。"
+      : "未達90分，不符合抽獎資格。"
+    );
+
+  sendToGoogle(score);
 }
 
-// Google 表單送出
 function sendToGoogle(score){
-const formURL="https://docs.google.com/forms/d/e/1FAIpQLScdNCEoBimh2GRPDz0TqGWHpWldiB3g6lZ4zjAYcZZUj8Rgrw/formResponse";
-const fields={
-"entry.993402590": name,
-"entry.1922734240": playerOrg,
-"entry.1807015476": playerDept,
-"entry.2064592372": score
-};
-fetch(formURL,{
-method:"POST",
-mode:"no-cors",
-headers:{"Content-Type":"application/x-www-form-urlencoded"},
-body:new URLSearchParams(fields)
-}).then(()=>console.log("資料已送出 Google 表單"))
-  .catch(err=>console.error("送出失敗:",err));
+  const formURL = "https://docs.google.com/forms/d/e/1FAIpQLScdNCEoBimh2GRPDz0TqGWHpWldiB3g6lZ4zjAYcZZUj8Rgrw/formResponse";
+
+  const fields = {
+    "entry.993402590": name,
+    "entry.1922734240": playerOrg,
+    "entry.1158877454": playerRole,
+    "entry.1807015476": playerDept,
+    "entry.2064592372": score
+  };
+
+  fetch(formURL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: new URLSearchParams(fields)
+  })
+  .then(() => {
+    console.log("資料已送出 Google 表單");
+  })
+  .catch(err => {
+    console.error("送出失敗:", err);
+  });
 }
 
-// 手機按鈕
-const btnLeft=document.getElementById("btnLeft");
-const btnRight=document.getElementById("btnRight");
-const btnJump=document.getElementById("btnJump");
-btnLeft.addEventListener("touchstart",()=>keys["ArrowLeft"]=true);
-btnLeft.addEventListener("touchend",()=>keys["ArrowLeft"]=false);
-btnRight.addEventListener("touchstart",()=>keys["ArrowRight"]=true);
-btnRight.addEventListener("touchend",()=>keys["ArrowRight"]=false);
-btnJump.addEventListener("touchstart",()=>{if(player.grounded){player.vy=-player.jump;player.grounded=false;}});
-document.addEventListener("touchmove",e=>e.preventDefault(),{passive:false});
+const btnLeft = document.getElementById("btnLeft");
+const btnRight = document.getElementById("btnRight");
 
-function loop(){update();draw();requestAnimationFrame(loop);}
-loop();
+btnLeft.addEventListener("touchstart", () => {
+  keys["ArrowLeft"] = true;
+});
+btnLeft.addEventListener("touchend", () => {
+  keys["ArrowLeft"] = false;
+});
+btnRight.addEventListener("touchstart", () => {
+  keys["ArrowRight"] = true;
+});
+btnRight.addEventListener("touchend", () => {
+  keys["ArrowRight"] = false;
+});
+
+document.addEventListener("touchmove", e => {
+  e.preventDefault();
+}, { passive:false });
+
+function loop(){
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
