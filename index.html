@@ -160,42 +160,9 @@ input, select{
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-function resizeCanvas(){
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  ground = canvas.height - 50 * scale;
-  if(player){
-    if(player.y + player.height >= ground){
-      player.y = ground - player.height;
-      player.vy = 0;
-      player.grounded = true;
-    }
-  }
-}
-window.addEventListener("resize", resizeCanvas);
-
 const scale = 1.8;
 let ground = 0;
 let worldWidth = 5150;
-
-const bgImg = new Image();
-bgImg.src = "bg.png";
-
-const playerImg = new Image();
-playerImg.src = "player.png"; // 3幀
-
-const flagImg = new Image();
-flagImg.src = "flag.png"; // 2幀
-
-let imagesLoaded = 0;
-[bgImg, playerImg, flagImg].forEach(img => {
-  img.onload = () => {
-    imagesLoaded++;
-    if(imagesLoaded === 3){
-      init();
-    }
-  };
-});
 
 let state = "start";
 let name = "";
@@ -227,6 +194,64 @@ let player = {
 };
 
 let goals = [];
+let finishMark = null;
+let gameLoopStarted = false;
+
+function resizeCanvas(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  ground = canvas.height - 50 * scale;
+
+  if(player){
+    if(player.y + player.height >= ground){
+      player.y = ground - player.height;
+      player.vy = 0;
+      player.grounded = true;
+    }
+  }
+
+  if(goals.length > 0){
+    goals.forEach((g, i) => {
+      let posX = 400 + i * 500;
+      if(i === 9){
+        posX -= 120;
+      }
+      g.x = posX;
+      g.y = ground - 80 * scale;
+    });
+
+    const lastGoal = goals[goals.length - 1];
+    finishMark = {
+      x: lastGoal.x + 10,
+      y: lastGoal.y - 118,
+      width: 135,
+      height: 85
+    };
+  }
+}
+window.addEventListener("resize", resizeCanvas);
+
+const bgImg = new Image();
+bgImg.src = "bg.png";
+
+const playerImg = new Image();
+playerImg.src = "player.png";
+
+const flagImg = new Image();
+flagImg.src = "flag.png";
+
+const finishImg = new Image();
+finishImg.src = "finish.png";
+
+let imagesLoaded = 0;
+[bgImg, playerImg, flagImg, finishImg].forEach(img => {
+  img.onload = () => {
+    imagesLoaded++;
+    if(imagesLoaded === 4){
+      init();
+    }
+  };
+});
 
 const questionBanks = {
   "主管題庫":[
@@ -301,8 +326,13 @@ function init(){
 
   goals = [];
   for(let i = 0; i < 10; i++){
+    let posX = 400 + i * 500;
+    if(i === 9){
+      posX -= 120;
+    }
+
     goals.push({
-      x: 400 + i * 500,
+      x: posX,
       y: ground - 80 * scale,
       width: 70 * scale,
       height: 80 * scale,
@@ -312,7 +342,18 @@ function init(){
     });
   }
 
-  requestAnimationFrame(loop);
+  const lastGoal = goals[goals.length - 1];
+  finishMark = {
+    x: lastGoal.x - 32,
+    y: lastGoal.y - 118,
+    width: 135,
+    height: 85
+  };
+
+  if(!gameLoopStarted){
+    gameLoopStarted = true;
+    requestAnimationFrame(loop);
+  }
 }
 
 function getQuestionBankByRole(role){
@@ -491,6 +532,16 @@ function draw(){
     );
   });
 
+  if(finishMark){
+    ctx.drawImage(
+      finishImg,
+      finishMark.x - cameraX,
+      finishMark.y,
+      finishMark.width,
+      finishMark.height
+    );
+  }
+
   ctx.drawImage(
     playerImg,
     player.currentFrame * (200 / 3), 0, (200 / 3), 83,
@@ -563,7 +614,6 @@ btnRight.addEventListener("touchend", () => {
 document.addEventListener("touchmove", e => {
   e.preventDefault();
 }, { passive:false });
-
 function loop(){
   update();
   draw();
