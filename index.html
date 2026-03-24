@@ -95,6 +95,33 @@ input, select{
   white-space:pre-line;
   line-height:1.8;
 }
+#feedbackPanel{
+  position:absolute;
+}
+#closeFeedback{
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:36px;
+  height:36px;
+  padding:0;
+  margin:0;
+  border:none;
+  border-radius:50%;
+  background:#ccc;
+  color:#000;
+  font-size:20px;
+  line-height:36px;
+  cursor:pointer;
+}
+#closeFeedback:hover{
+  background:#bbb;
+}
+#feedbackText{
+  margin-top:10px;
+  line-height:1.6;
+  word-break:break-word;
+}
 </style>
 </head>
 <body>
@@ -116,22 +143,19 @@ input, select{
   
   <div style="display:flex; gap:15px; align-items:flex-start; margin:10px 0;">
 
-  <!-- 左：文字 -->
-  <div style="flex:1; text-align:left; font-size:14px; line-height:1.6;">
+    <div style="flex:1; text-align:left; font-size:14px; line-height:1.6;">
       《遊戲說明》<br>
-    1. 以電腦操作體驗最佳。<br>
-    2. 以「鍵盤」方向鍵⬅️➡️控制廉小風。<br>
-    3. ⬅️➡️控制廉小風碰觸「小蜜蜂」後答題。<br>
-    4. 以「滑鼠」點選正確答題。<br>
-    5. 每題10分，共10題。<br>
-    6. 達<b>90分</b>以上符合抽獎資格。
+      1. 以電腦操作體驗最佳。<br>
+      2. 以「鍵盤」方向鍵← →控制廉小風。<br>
+      3. ← →控制廉小風碰觸「小蜜蜂」後答題。<br>
+      4. 以「滑鼠」點選正確答題。<br>
+      5. 每題10分，共10題。<br>
+      6. 達<b>90分</b>以上符合抽獎資格。
+    </div>
+
+    <img src="intro.png"
+         style="width:120px; height:120px; object-fit:contain; border-radius:8px;">
   </div>
-
-  <!-- 右：圖片 -->
-  <img src="intro.png"
-       style="width:120px; height:120px; object-fit:contain; border-radius:8px;">
-
-</div>
 
   <input id="playerName" placeholder="姓名">
 
@@ -162,6 +186,11 @@ input, select{
   <div id="answers"></div>
 </div>
 
+<div id="feedbackPanel" class="panel hidden">
+  <button id="closeFeedback">×</button>
+  <h2 id="feedbackText"></h2>
+</div>
+
 <div id="endPanel" class="panel hidden">
   <h2>挑戰完成</h2>
   <p id="finalResult"></p>
@@ -188,6 +217,7 @@ let cameraX = 0;
 let keys = {};
 let gravity = 0.8;
 let currentQuestions = [];
+let feedbackCallback = null;
 
 let player = {
   x:100,
@@ -196,7 +226,7 @@ let player = {
   height:86 * scale,
   vx:0,
   vy:0,
-  speed:5,
+  speed:7,
   jump:16 * scale,
   grounded:false,
   currentFrame:0,
@@ -252,14 +282,20 @@ playerImg.src = "player.png";
 const flagImg = new Image();
 flagImg.src = "flag.png";
 
+const flagCorrectImg = new Image();
+flagCorrectImg.src = "flag_correct.png";
+
+const flagWrongImg = new Image();
+flagWrongImg.src = "flag_wrong.png";
+
 const finishImg = new Image();
 finishImg.src = "finish.png";
 
 let imagesLoaded = 0;
-[bgImg, playerImg, flagImg, finishImg].forEach(img => {
+[bgImg, playerImg, flagImg, flagCorrectImg, flagWrongImg, finishImg].forEach(img => {
   img.onload = () => {
     imagesLoaded++;
-    if(imagesLoaded === 4){
+    if(imagesLoaded === 6){
       init();
     }
   };
@@ -350,7 +386,8 @@ function init(){
       height: 80 * scale,
       triggered: false,
       frame: 0,
-      frameTimer: 0
+      frameTimer: 0,
+      correct: null
     });
   }
 
@@ -402,6 +439,7 @@ function startGame(){
   level = 1;
   score = 0;
   cameraX = 0;
+  feedbackCallback = null;
   document.getElementById("level").innerText = level;
   document.getElementById("score").innerText = score;
 
@@ -413,10 +451,17 @@ function startGame(){
   player.frameTimer = 0;
   player.grounded = true;
 
-  goals.forEach(g => g.triggered = false);
+  goals.forEach(g => {
+    g.triggered = false;
+    g.correct = null;
+  });
 
   document.getElementById("startPanel").classList.add("hidden");
   document.getElementById("ui").classList.remove("hidden");
+  document.getElementById("quizPanel").classList.add("hidden");
+  document.getElementById("feedbackPanel").classList.add("hidden");
+  document.getElementById("endPanel").classList.add("hidden");
+
   state = "play";
 }
 
@@ -464,10 +509,12 @@ function update(){
   if(cameraX > worldWidth - canvas.width) cameraX = worldWidth - canvas.width;
 
   goals.forEach(g => {
-    g.frameTimer++;
-    if(g.frameTimer > 20){
-      g.frame = (g.frame + 1) % 2;
-      g.frameTimer = 0;
+    if(g.correct === null){
+      g.frameTimer++;
+      if(g.frameTimer > 20){
+        g.frame = (g.frame + 1) % 2;
+        g.frameTimer = 0;
+      }
     }
   });
 
@@ -497,22 +544,59 @@ function update(){
 }
 
 function checkAnswer(index){
-  if(index === currentQuestions[level - 1].c){
+  const q = currentQuestions[level - 1];
+  const isCorrect = index === q.c;
+
+  goals[level - 1].correct = isCorrect;
+
+  if(isCorrect){
     score += 10;
   }
 
   document.getElementById("score").innerText = score;
   document.getElementById("quizPanel").classList.add("hidden");
 
-  level++;
-  document.getElementById("level").innerText = level > 10 ? 10 : level;
+  showFeedback(
+    isCorrect,
+    q.a[q.c],
+    () => {
+      level++;
+      document.getElementById("level").innerText = level > 10 ? 10 : level;
 
-  if(level > 10){
-    endGame();
-  }else{
-    state = "play";
-  }
+      if(level > 10){
+        endGame();
+      }else{
+        state = "play";
+      }
+    }
+  );
 }
+
+function showFeedback(isCorrect, correctText, callback){
+  const panel = document.getElementById("feedbackPanel");
+  const text = document.getElementById("feedbackText");
+
+  if(isCorrect){
+    text.innerText = "答對了！";
+    text.style.color = "#2e7d32";
+  }else{
+    text.innerText = "答錯了！正確答案是 " + correctText;
+    text.style.color = "#c62828";
+  }
+
+  feedbackCallback = callback;
+  panel.classList.remove("hidden");
+}
+
+document.getElementById("closeFeedback").addEventListener("click", () => {
+  document.getElementById("feedbackPanel").classList.add("hidden");
+
+  if(feedbackCallback){
+    const cb = feedbackCallback;
+    feedbackCallback = null;
+    cb();
+  }
+});
 
 function collide(a, b){
   return (
@@ -537,11 +621,25 @@ function draw(){
   }
 
   goals.forEach(g => {
-    ctx.drawImage(
-      flagImg,
-      g.frame * 250, 0, 250, 378,
-      g.x - cameraX, g.y, g.width, g.height
-    );
+    if(g.correct === true){
+      ctx.drawImage(
+        flagCorrectImg,
+        0, 0, flagCorrectImg.width, flagCorrectImg.height,
+        g.x - cameraX, g.y, g.width, g.height
+      );
+    }else if(g.correct === false){
+      ctx.drawImage(
+        flagWrongImg,
+        0, 0, flagWrongImg.width, flagWrongImg.height,
+        g.x - cameraX, g.y, g.width, g.height
+      );
+    }else{
+      ctx.drawImage(
+        flagImg,
+        g.frame * 250, 0, 250, 378,
+        g.x - cameraX, g.y, g.width, g.height
+      );
+    }
   });
 
   if(finishMark){
@@ -564,6 +662,7 @@ function draw(){
 function endGame(){
   state = "end";
   document.getElementById("ui").classList.add("hidden");
+  document.getElementById("feedbackPanel").classList.add("hidden");
   document.getElementById("endPanel").classList.remove("hidden");
 
   document.getElementById("finalResult").innerText =
@@ -626,6 +725,7 @@ btnRight.addEventListener("touchend", () => {
 document.addEventListener("touchmove", e => {
   e.preventDefault();
 }, { passive:false });
+
 function loop(){
   update();
   draw();
