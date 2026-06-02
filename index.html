@@ -148,9 +148,9 @@ input, select{
       1. 以電腦操作體驗最佳。<br>
       2. 以「鍵盤⌨️」方向鍵⬅️ ➡️控制廉小風。<br>
       3. ⬅️ ➡️控制廉小風碰觸「小蜜蜂🐝」後答題。<br>
-      4. 以「滑鼠🖱️」或⬆️⬇️選擇正確答題。<br>
-      5. 每題10分，共10題。<br>
-         達<b>90分</b>以上符合抽獎資格。
+      4. 以「滑鼠🖱️」或「⬆️⬇️」選擇正確答題。<br>
+      5. 每題10分，共10題，達<b>90分</b>以上符合抽獎資格。。<br>
+         
     </div>
 
     <img src="intro.png"
@@ -368,8 +368,22 @@ document.addEventListener("keydown", e => {
 
   if(
     state === "tutorial" &&
-    (e.key === "ArrowLeft" || e.key === "ArrowRight")
+    (
+      e.key === "ArrowLeft" ||
+      e.key === "ArrowRight"
+    )
   ){
+
+    document.getElementById("controlHint")
+      .classList.add("hidden");
+
+    state = "play";
+  }
+});
+
+document.addEventListener("touchstart", () => {
+
+  if(state === "tutorial"){
 
     document.getElementById("controlHint")
       .classList.add("hidden");
