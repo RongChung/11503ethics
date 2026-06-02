@@ -148,9 +148,9 @@ input, select{
       1. 以電腦操作體驗最佳。<br>
       2. 以「鍵盤⌨️」方向鍵⬅️ ➡️控制廉小風。<br>
       3. ⬅️ ➡️控制廉小風碰觸「小蜜蜂🐝」後答題。<br>
-      4. 以「滑鼠🖱️」點選正確答題。<br>
+      4. 以「滑鼠🖱️」或⬆️⬇️選擇正確答題。<br>
       5. 每題10分，共10題。<br>
-      6. 達<b>90分</b>以上符合抽獎資格。
+         達<b>90分</b>以上符合抽獎資格。
     </div>
 
     <img src="intro.png"
@@ -163,7 +163,6 @@ input, select{
     <option value="">機關</option>
     <option value="交通局">交通局</option>
     <option value="停管處">停管處</option>
-    <option value="裁決處">裁決處</option>
     <option value="車鑑會">車鑑會</option>
   </select>
 
@@ -190,7 +189,10 @@ input, select{
   <button id="closeFeedback">×</button>
   <h2 id="feedbackText"></h2>
 </div>
-
+<div id="controlHint" class="panel hidden">
+  <h2>請使用鍵盤 ← → 移動廉小風</h2>
+  <p>按方向鍵開始遊戲</p>
+</div>
 <div id="endPanel" class="panel hidden">
   <h2>挑戰完成</h2>
   <p id="finalResult"></p>
@@ -218,7 +220,7 @@ let keys = {};
 let gravity = 0.8;
 let currentQuestions = [];
 let feedbackCallback = null;
-
+let selectedAnswer = 0;
 let player = {
   x:100,
   y:0,
@@ -362,6 +364,56 @@ document.addEventListener("keydown", e => {
 document.addEventListener("keyup", e => {
   keys[e.code] = false;
 });
+document.addEventListener("keydown", e => {
+
+  if(
+    state === "tutorial" &&
+    (e.key === "ArrowLeft" || e.key === "ArrowRight")
+  ){
+
+    document.getElementById("controlHint")
+      .classList.add("hidden");
+
+    state = "play";
+  }
+});
+document.addEventListener("keyup", e => {
+
+  if(state === "quiz"){
+
+    const answerCount =
+      document.querySelectorAll("#answers button").length;
+
+    if(e.key === "ArrowUp"){
+
+      selectedAnswer--;
+
+      if(selectedAnswer < 0){
+        selectedAnswer = answerCount - 1;
+      }
+
+      updateAnswerSelection();
+    }
+
+    if(e.key === "ArrowDown"){
+
+      selectedAnswer++;
+
+      if(selectedAnswer >= answerCount){
+        selectedAnswer = 0;
+      }
+
+      updateAnswerSelection();
+    }
+
+    if(
+  e.key === "Enter" &&
+  document.getElementById("quizPanel").classList.contains("hidden") === false
+){
+  checkAnswer(selectedAnswer);
+}
+  }
+});
 
 function init(){
   resizeCanvas();
@@ -462,7 +514,11 @@ function startGame(){
   document.getElementById("feedbackPanel").classList.add("hidden");
   document.getElementById("endPanel").classList.add("hidden");
 
-  state = "play";
+ document.getElementById("controlHint")
+  .classList.remove("hidden");
+
+state = "tutorial";
+
 }
 
 function update(){
@@ -533,14 +589,44 @@ function update(){
       const ansDiv = document.getElementById("answers");
       ansDiv.innerHTML = "";
 
-      q.a.forEach((text, index) => {
-        const btn = document.createElement("button");
-        btn.innerText = text;
-        btn.onclick = () => checkAnswer(index);
-        ansDiv.appendChild(btn);
-      });
+     selectedAnswer = 0;
+
+q.a.forEach((text, index) => {
+
+  const btn = document.createElement("button");
+
+  btn.innerText = text;
+
+  btn.dataset.index = index;
+
+  if(index === selectedAnswer){
+    btn.style.background = "#1565c0";
+  }
+
+  btn.onclick = () => checkAnswer(index);
+
+  ansDiv.appendChild(btn);
+});
+
+updateAnswerSelection();
     }
   }
+}
+function updateAnswerSelection(){
+
+  const buttons = document.querySelectorAll("#answers button");
+
+  buttons.forEach((btn, index) => {
+
+    if(index === selectedAnswer){
+      btn.style.background = "#1565c0";
+      btn.style.transform = "scale(1.03)";
+    }else{
+      btn.style.background = "#2e7d32";
+      btn.style.transform = "scale(1)";
+    }
+
+  });
 }
 
 function checkAnswer(index){
@@ -585,7 +671,11 @@ function showFeedback(isCorrect, correctText, callback){
   }
 
   feedbackCallback = callback;
-  panel.classList.remove("hidden");
+panel.classList.remove("hidden");
+
+setTimeout(() => {
+  state = "feedback";
+}, 50);
 }
 
 document.getElementById("closeFeedback").addEventListener("click", () => {
@@ -595,10 +685,29 @@ document.getElementById("closeFeedback").addEventListener("click", () => {
     const cb = feedbackCallback;
     feedbackCallback = null;
     cb();
+state = "play";
   }
 });
+document.addEventListener("keyup", e => {
 
-function collide(a, b){
+  const panel = document.getElementById("feedbackPanel");
+
+  // feedback顯示時，任意鍵繼續
+  if(
+    !panel.classList.contains("hidden") &&
+    state === "feedback"
+  ){
+
+    panel.classList.add("hidden");
+
+    if(feedbackCallback){
+      const cb = feedbackCallback;
+      feedbackCallback = null;
+      cb();
+state = "play";
+    }
+  }
+});function collide(a, b){
   return (
     a.x < b.x + b.width &&
     a.x + a.width > b.x &&
